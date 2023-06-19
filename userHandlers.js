@@ -10,13 +10,16 @@ const getUsers = (req, res) => {
 const getUserById = (req, res) => {
   const id = parseInt(req.params.id);
 
-  const user = users.find((user) => user.id === id);
-
-  if (user != null) {
-    res.json(user);
-  } else {
-    res.status(404).send("Not Found");
-  }
+  database
+    .query("SELECT * FROM users WHERE id = ?", [id])
+    .then(([users]) => {
+      if (users.length > 0) {
+        res.json(users[0]);
+      } else {
+        res.status(404).send("Not Found");
+      }
+    })
+    .catch((error) => res.json(error));
 };
 
 const postUser = (req, res) => {
@@ -24,14 +27,14 @@ const postUser = (req, res) => {
 
   database
     .query(
-      "INSERT INTO users(firstname, lastname, email, city) VALUES (?, ?, ?, ?)",
-      [firstname, lastname, email, city]
+      "INSERT INTO users(firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
+      [firstname, lastname, email, city, language]
     )
     .then(([result]) => {
       res.location(`/api/users/${result.insertId}`).sendStatus(201);
     })
-    .catch((err) => {
-      console.error(err);
+    .catch((error) => {
+      console.error(error);
       res.status(500).send("Error saving the user");
     });
 };
