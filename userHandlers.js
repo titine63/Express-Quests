@@ -24,19 +24,11 @@ const postUser = (req, res) => {
 
   database
     .query(
-      "INSERT INTO users (firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
-      [firstname, lastname, email, city, language]
+      "INSERT INTO users(firstname, lastname, email, city) VALUES (?, ?, ?, ?)",
+      [firstname, lastname, email, city]
     )
     .then(([result]) => {
-      return database.query("SELECT * FROM users WHERE id = ?", [
-        result.insertId,
-      ]);
-    })
-    .then(([users]) => {
-      const insertedUser = users[0];
-      users.push(insertedUser);
-
-      res.location(`/api/users/${insertedUser.id}`).sendStatus(201);
+      res.location(`/api/users/${result.insertId}`).sendStatus(201);
     })
     .catch((err) => {
       console.error(err);
