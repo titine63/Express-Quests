@@ -3,20 +3,23 @@ const database = require("./database");
 const getMovies = (req, res) => {
   database
     .query("SELECT * FROM movies")
-    .then(([movies2]) => res.json(movies2))
+    .then(([movies]) => res.json(movies))
     .catch((error) => res.json(error));
 };
 
 const getMovieById = (req, res) => {
   const id = parseInt(req.params.id);
 
-  const movie = movies.find((movie) => movie.id === id);
-
-  if (movie != null) {
-    res.json(movie);
-  } else {
-    res.status(404).send("Not Found");
-  }
+  database
+    .query("SELECT * FROM movies WHERE id = ?", [id])
+    .then(([movies]) => {
+      if (movies.length > 0) {
+        res.json(movies[0]);
+      } else {
+        res.status(404).send("Not Found");
+      }
+    })
+    .catch((error) => res.json(error));
 };
 
 const postMovie = (req, res) => {
@@ -31,8 +34,8 @@ const postMovie = (req, res) => {
       console.log(result);
       res.location(`/api/movies/${result.insertId}`).sendStatus(201);
     })
-    .catch((err) => {
-      console.error(err);
+    .catch((error) => {
+      console.error(error);
       res.status(500).send("Error saving the movie");
     });
 };
