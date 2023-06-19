@@ -1,4 +1,5 @@
 const database = require("./database");
+const { validationResult } = require("express-validator");
 
 const getMovies = (req, res) => {
   database
@@ -25,6 +26,11 @@ const getMovieById = (req, res) => {
 const postMovie = (req, res) => {
   const { title, director, year, color, duration } = req.body;
 
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ validationErrors: errors.array() });
+  }
+
   database
     .query(
       "INSERT INTO movies(title, director, year, color, duration) VALUES (?, ?, ?, ?, ?)",
@@ -36,7 +42,7 @@ const postMovie = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.status(500).send("Error saving the movie");
+      res.status(422).send("Error saving the movie");
     });
 };
 
@@ -44,21 +50,25 @@ const updateMovie = (req, res) => {
   const id = parseInt(req.params.id);
   const { title, director, year, color, duration } = req.body;
 
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ validationErrors: errors.array() });
+  }
+
   database
     .query(
-      "update movies set title = ?, director = ?, year = ?, color = ?, duration = ? where id = ?",
+      "UPDATE movies SET title = ?, director = ?, year = ?, color = ?, duration = ? WHERE id = ?",
       [title, director, year, color, duration, id]
     )
     .then(([result]) => {
       if (result.affectedRows === 0) {
-        res.status(404).send("Not Found");
-      } else {
-        res.sendStatus(204);
+        return res.status(404).send("Not Found");
       }
+      res.sendStatus(204);
     })
     .catch((err) => {
       console.error(err);
-      res.status(500).send("Error editing the movie");
+      res.status(422).send("Error updating the movie");
     });
 };
 

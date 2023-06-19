@@ -1,4 +1,5 @@
 const database = require("./database");
+const { validationResult } = require("express-validator");
 
 const getUsers = (req, res) => {
   database
@@ -35,7 +36,7 @@ const postUser = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.status(500).send("Error saving the user");
+      res.status(422).send("Error saving the user");
     });
 };
 
@@ -57,7 +58,7 @@ const updateUser = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.status(500).send("Error editing the user");
+      res.status(422).send("Error editing the user");
     });
 };
 
