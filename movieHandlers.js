@@ -2,9 +2,27 @@ const database = require("./database");
 const { validationResult } = require("express-validator");
 
 const getMovies = (req, res) => {
+  let sql = "SELECT * FROM movies";
+  const sqlValues = [];
+
+  if (req.query.color != null) {
+    sql += " WHERE color = ?";
+    sqlValues.push(req.query.color);
+
+    if (req.query.max_duration != null) {
+      sql += " AND duration <= ?";
+      sqlValues.push(req.query.max_duration);
+    }
+  } else if (req.query.max_duration != null) {
+    sql += " WHERE duration <= ?";
+    sqlValues.push(req.query.max_duration);
+  }
+
   database
-    .query("SELECT * FROM movies")
-    .then(([movies]) => res.json(movies))
+    .query(sql, sqlValues)
+    .then(([movies]) => {
+      res.json(movies);
+    })
     .catch((error) => res.json(error));
 };
 
@@ -76,7 +94,7 @@ const deleteMovie = (req, res) => {
   const id = parseInt(req.params.id);
 
   database
-    .query("delete from movies where id = ?", [id])
+    .query("DELETE FROM movies WHERE id = ?", [id])
     .then(([result]) => {
       if (result.affectedRows === 0) {
         res.status(404).send("Not Found");

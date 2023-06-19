@@ -2,8 +2,26 @@ const database = require("./database");
 const { validationResult } = require("express-validator");
 
 const getUsers = (req, res) => {
+  const { language, city } = req.query;
+
+  let sql = "SELECT * FROM users";
+  const sqlValues = [];
+
+  if (language) {
+    sql += " WHERE language = ?";
+    sqlValues.push(language);
+
+    if (city) {
+      sql += " AND city = ?";
+      sqlValues.push(city);
+    }
+  } else if (city) {
+    sql += " WHERE city = ?";
+    sqlValues.push(city);
+  }
+
   database
-    .query("SELECT * FROM users")
+    .query(sql, sqlValues)
     .then(([users]) => res.json(users))
     .catch((error) => res.json(error));
 };
